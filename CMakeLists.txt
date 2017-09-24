@@ -35,21 +35,38 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+	include
+  	${catkin_INCLUDE_DIRS}
 )
+
+add_library(ascend_drone src/AscendDrone.cpp)
+target_link_libraries(ascend_drone ${catkin_LIBRARIES})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ros_workshop_node.cpp)
+add_executable(control_node src/control_node.cpp)
+add_executable(perception_node src/perception_node.cpp)
+add_executable(ai_node src/ai_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(perception_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(ai_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
+target_link_libraries(control_node
 	${catkin_LIBRARIES}
+	ascend_drone
 )
-
+## Specify libraries to link a library or executable target against
+target_link_libraries(perception_node
+	${catkin_LIBRARIES}
+	ascend_drone
+)
+## Specify libraries to link a library or executable target against
+target_link_libraries(ai_node
+	${catkin_LIBRARIES}
+	ascend_drone
+)

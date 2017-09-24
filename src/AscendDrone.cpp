@@ -24,8 +24,8 @@ constexpr uint16_t default_mask = IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_AFX
 ControlDrone::ControlDrone() {
 	assert(ros::isInitialized());
 	posPub_ = nh_.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
-	posSub_ = nh_.advertise<geometry_msgs::PoseStamped>("mavros/local_position/pose", 10, &ControlDrone::posCB, this);	
-	timer_ = nh_.createTimer(ros::Duration(0.03), timerCB, this);
+	posSub_ = nh_.subscribe("mavros/local_position/pose", 10, &ControlDrone::posCB, this);	
+	timer_ = nh_.createTimer(ros::Duration(0.03), &ControlDrone::timerCB, this);
 	targetPos_.type_mask = default_mask;
 }
 

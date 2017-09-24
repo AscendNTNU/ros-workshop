@@ -1,0 +1,5 @@
+<launch>
+    <node name="control_node" pkg="ros_workshop" type="control_node" output="screen"/>
+    <node name="perception_node" pkg="ros_workshop" type="perception_node" output="screen"/>
+    <node name="ai_node" pkg="ros_workshop" type="ai_node" output="screen"/>
+</launch>
