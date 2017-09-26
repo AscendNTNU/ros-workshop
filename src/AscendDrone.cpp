@@ -41,7 +41,7 @@ void ControlDrone::takeoff() {
     targetPos_.type_mask = default_mask | SETPOINT_TYPE_TAKEOFF;
     targetPos_.position.x = currPos_.pose.position.x;
     targetPos_.position.y = currPos_.pose.position.y;
-    targetPos_.position.z = currPos_.pose.position.z;
+    targetPos_.position.z = 2.0; //Meters
 }
 
 void ControlDrone::setTarget(float x, float y, float z) {
@@ -55,7 +55,7 @@ void ControlDrone::land() {
     targetPos_.type_mask = default_mask | SETPOINT_TYPE_LAND;
     targetPos_.position.x = currPos_.pose.position.x;
     targetPos_.position.y = currPos_.pose.position.y;
-    targetPos_.position.z = currPos_.pose.position.z;
+    targetPos_.position.z = -1.0; //Not used
 }
 
 PerceptionDrone::PerceptionDrone() {
