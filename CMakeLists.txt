@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mavros_msgs
   roscpp
+  std_msgs
 )
 
 
@@ -48,6 +49,7 @@ target_link_libraries(ascend_drone ${catkin_LIBRARIES})
 add_executable(control_node src/control_node.cpp)
 add_executable(perception_node src/perception_node.cpp)
 add_executable(ai_node src/ai_node.cpp)
+add_executable(test_ros src/test.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -69,4 +71,8 @@ target_link_libraries(perception_node
 target_link_libraries(ai_node
 	${catkin_LIBRARIES}
 	ascend_drone
+)
+
+target_link_libraries(test_ros
+	${catkin_LIBRARIES}
 )
