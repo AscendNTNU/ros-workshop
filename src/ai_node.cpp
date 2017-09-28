@@ -15,8 +15,5 @@ int main(int argc, char** argv) {
 
         ros::spinOnce();
     }
-    
-    //La ROS gjøre magien sin!  
-    ros::spin();
     return 0;
 }
