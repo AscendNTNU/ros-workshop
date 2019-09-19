@@ -1,0 +1,20 @@
+<robot name="box">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <mass value="10"/>
+      <inertia ixx="7" iyy="7" izz="7" iyz="0" ixy="0" ixz="0"/>
+    </inertial>
+
+    <visual>
+      <geometry>
+        <box size="2 2 2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="2 2 2"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

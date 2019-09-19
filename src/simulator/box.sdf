@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="box">
+    <static>true</static>
+    <link name="base">
+      <visual name="base_visual">
+        <
+      </visual>
+    </link>
+  </model>
+</sdf>

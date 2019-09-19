@@ -10,7 +10,10 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mavros_msgs
+  gazebo_msgs
+  gazebo_ros
   roscpp
+  rospy
   std_msgs
 )
 
@@ -26,7 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 	INCLUDE_DIRS include
-	CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp
+	CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp rospy
 )
 
 ###########
