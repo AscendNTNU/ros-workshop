@@ -1,0 +1,8 @@
+<launch>
+  <node name="mavros" pkg="ros_workshop" type="fake_mavros_node" output="screen">
+    <param name="gz_setpoint_topic" value="~/drone/setpoint"/>
+    <param name="gz_yaw_topic" value="~/drone/yaw"/>
+    <param name="gz_pose_topic" value="~/drone/pose"/>
+  </node>
+</launch>
+

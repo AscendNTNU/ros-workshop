@@ -9,8 +9,8 @@ import math
 import rospy
 import rospkg
 from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
-from geometry_msgs.msg import Pose, Quaternion, Point, Polygon, PoseArray
-from gazebo_msgs.msg import ModelStates
+from geometry_msgs.msg import Pose, Quaternion, Point, Polygon, PoseArray, Vector3, Twist
+from gazebo_msgs.msg import ModelState, ModelStates
 
 def random_quaternion():
     xyzw = [random.uniform(-1, 1) for _ in range(4)]
@@ -34,9 +34,11 @@ def random_position(minxy, maxxy, minz, maxz):
 
 
 class GazeboHandler:
-    def __init__(self, spawn_model_service):
-        rospy.wait_for_service(spawn_model_service)
-        self.spawn_service = rospy.ServiceProxy(spawn_model_service, SpawnModel)
+    def __init__(self):
+        rospy.wait_for_service("/gazebo/spawn_urdf_model")
+        rospy.wait_for_service("/gazebo/spawn_sdf_model")
+        self.spawn_urdf_service = rospy.ServiceProxy("/gazebo/spawn_urdf_model", SpawnModel)
+        self.spawn_sdf_service = rospy.ServiceProxy("/gazebo/spawn_sdf_model", SpawnModel)
 
         self.subscriber = rospy.Subscriber("/gazebo/model_states", ModelStates, self._model_states_cb)
         self._tracking_names = []
@@ -55,13 +57,22 @@ class GazeboHandler:
         req.initial_pose = pose
         req.reference_frame = "map"
 
-        self.spawn_service(
-            model_name=name,
-            model_xml = model_xml,
-            robot_namespace = "",
-            initial_pose = pose,
-            reference_frame = "map",
-        )
+        if filepath.endswith(".urdf"):
+            self.spawn_urdf_service(
+                model_name=name,
+                model_xml = model_xml,
+                robot_namespace = "",
+                initial_pose = pose,
+                reference_frame = "map",
+            )
+        elif filepath.endswith(".sdf"):
+            self.spawn_sdf_service(
+                model_name=name,
+                model_xml = model_xml,
+                robot_namespace = "",
+                initial_pose = pose,
+                reference_frame = "map",
+            )
 
     def track_object(self, model_name):
         self._tracking_names.append(model_name)
@@ -79,14 +90,26 @@ class GazeboHandler:
 
 def main():
     rospy.init_node("simulator")
-    gzHandler = GazeboHandler("/gazebo/spawn_urdf_model")
+    gzHandler = GazeboHandler()
 
     rospack = rospkg.RosPack()
     boxurdf = rospack.get_path("ros_workshop") + "/src/simulator/box.urdf"
+    dronesdf = rospack.get_path("ros_workshop") + "/src/simulator/models/drone/drone.sdf"
 
-    points = [random_position(-15,15,4,8) for _ in range(8)]
+    drone_start_pos = random_position(-5,5,0.2, 0.3)
+
+    # generate box positions
+    points = []
+    while len(points) < 0:
+        p = random_position(-15,15,4,8)
+        if math.sqrt((p.x - drone_start_pos.x)**2 + (p.y - drone_start_pos.y)**2) > 4:
+            points.append(p)
 
     pose = Pose()
+    pose.position = drone_start_pos
+    pose.orientation = Quaternion(0,0,0,1)
+    gzHandler.spawn_model("drone", pose, dronesdf)
+
     for i, point in enumerate(points):
         pose.position = point
         pose.orientation = random_quaternion()
@@ -98,17 +121,17 @@ def main():
     boxpub = rospy.Publisher("simulator/boxes", PoseArray, queue_size=1)
     boxes = PoseArray()
 
-    rate = rospy.Rate(1)
+
+
+    rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         boxes.header.stamp = rospy.Time.now()
         boxes.header.frame_id = "map"
         boxes.poses = gzHandler.get_tracked()
 
         boxpub.publish(boxes)
+
         rate.sleep()
-
-
-
 
 
 if __name__ == "__main__":

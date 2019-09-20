@@ -42,7 +42,7 @@ rosrun ros_workshop perception_node
 
 3. What happens if we start the perception node before starting roscore?
 
-4. Use the same process to start control_node in a new terminal. 
+4. Restart the perception node and use the same process to start control_node in a new terminal. 
 
 5. We will also start the AI systems, which were written in python. Run
 ```
@@ -63,10 +63,6 @@ Now we are going to modify the code so that it does something useful. In the pro
 ### perception.cpp
 
 #### Setting up subscribers
-
-
-
-
 
 
 

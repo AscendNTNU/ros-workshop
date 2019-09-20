@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+find_package(gazebo REQUIRED)
+
 
 ###################################
 ## catkin specific configuration ##
@@ -69,4 +71,20 @@ target_link_libraries(perception_node
 	${catkin_LIBRARIES}
 	ascend_drone
 )
+
+
+
+## Add gazebo plugins
+include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
+link_directories(${GAZEBO_LIBRARY_DIRS})
+list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
+add_library(drone_controller_plugin SHARED src/simulator/drone_controller.cc)
+target_link_libraries(drone_controller_plugin ${GAZEBO_LIBRARIES})
+add_library(drone_props_spinner_plugin SHARED src/simulator/drone_props.cc)
+target_link_libraries(drone_props_spinner_plugin  ${GAZEBO_LIBRARIES})
+#message(STATUS "GAZEBO LIBS: " ${GAZEBO_LIBRARIES})
+
+add_executable(fake_mavros_node src/simulator/fake_mavros.cpp)
+add_dependencies(fake_mavros_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fake_mavros_node ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
