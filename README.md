@@ -221,5 +221,26 @@ Finish the AI node by adding the closest box data to the message before publishi
 
 ## control.cpp
 
+Now that we have set up logic for deciding where to fly the drone, we need the control node to actually control it.
+
+### Control drone from terminal
+To control the drone, we will publish setpoints to a node called mavros. 
+Before we do this from code, we will do it from the terminal in order to get more familiar with the rostopic tool. 
+Type `rostopic pub /mavros/setpoint_raw/local` without pressing enter. Then press TAB a couple of times and let autocomplete fill out a message type and a message for you to edit. Use the arrow keys to scroll to the position attribute and set the position to somewhere above ground. Verify that the drone flies to that spot after you hit enter. 
+
+### Control drone from code
+Set up a subscriber to listen to the topic "/control/position_setpoint" topic you created in the last task. 
+
+Use `rostopic info /mavros/setpoint_raw/local` to find out what message type it expects. Import that message type into the control.cpp. Note that it will be inside mavros_msgs and not geometry_msgs as we've seen before, but the process is the same. Note that for this workshop you only have to fill out the position attribute of the message. The others can be ignored.
+
+All the boxes are 2 meters tall, and the control drone should ensure that the drone always flies above the boxes. So event if the target on the control/position_setpoint topic is lower than 2 meter, the control node should account for this. 
+
+Implement the control node as specified. You should now have a system which flies to the box closest to it at the start. 
+
+
+## Finishing ai.py
+
+Now that you are able to control the drone, modify ai.py so that the drone visits all the boxes. It doesn't have to be optimal, but it shouldn't visit the same box more than once.
+
 
 

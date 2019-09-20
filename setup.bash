@@ -1,1 +1,4 @@
-sudo apt install python-catkin-tools
+sudo apt install \
+  ros-melodic-mavros-msgs \
+  python-catkin-tools
+
