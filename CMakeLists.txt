@@ -48,8 +48,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(control_node src/control1.cpp)
-add_executable(perception_node src/perception2.cpp)
+add_executable(control_node src/control.cpp)
+add_executable(perception_node src/perception.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
