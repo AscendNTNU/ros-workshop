@@ -1,17 +1,18 @@
 # ROS workshop
-ROS package intended for ROS workshop. 
-Package contains:
+Welcome to the Ascend ROS workshop! In this workshop you will get practical experience with the most important functionality of ROS.
+
+In this workshop we will build a system reminiscent of Ascend system with three main node.
 - Node for Perception group
 - Node for Control group
 - Node for AI group
-- Simple interface to drone
 
-Recommends to use GIT branches to avoid compilation conflicts when multiple nodes are edited at once!
-
+Behind the scenes there is also a node for handling the simulator, but it should not be necessary to interact with it directly in this workshop.
 
 
-## Tasks
 
+# Tasks
+
+## Setup
 ### Get the code
 1. Create a directory called `catkin_ws` on your computer with a subdirectory called `src`.
 ```
@@ -62,7 +63,7 @@ roslaunch ros_workshop simulator.launch
 ```
 This will open up a simulator called Gazebo and add a drone and some boxes on random places in the world. 
 
-### Introducing ROS topics
+## First look at ROS topics
 Leave the simulator running from the previous task. In another terminal type `rostopic list`. `rostopic` is a command line tool which gives information about the ROS messaging system. 
 When running the command above you will get a list of all the topics in the system. A topic is a place where nodes can recieve and publish messages. 
 
@@ -109,10 +110,10 @@ Note that the nodehandle has already been made in the given code.
 Add the code above to perception.cpp and build it using `catkin build`. Run both the simulator and the nodes using `roslaunch ros_workshop simulator.launch` and `roslaunch ros_workshop nodes.launch` in separate terminals.
 
 Are the messages being recieved by the perception node?
-Once you are sure the messages are being recieved, you can progress to the next part where the publisher will be set up.
+Once you are sure the messages are being recieved, you can progress to the next part where the publisher will be set up. You can also remove the debug print since we now know it works. 
 
 #### Setting up a publisher
-The perception node should republish the box data that we got above, but we want to ignore the orientation. That means we have to change message type from `geometry_msgs/PoseArray` to an array of points. Unfortunately there is no `geometry_msgs/PointArray`, but there is something called (geometry_msgs/Polygon)[http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html] which is an array of points so it will work similarly. Keep the link in the back of the mind when you fill out the polygon messages later. 
+The perception node should republish the box data that we got above, but we want to ignore the orientation. That means we have to change message type from `geometry_msgs/PoseArray` to an array of points. Unfortunately there is no `geometry_msgs/PointArray`, but there is something called [geometry_msgs/Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html) which is an array of points so it will work similarly. Keep the link in the back of the mind when you fill out the polygon messages later. 
 
 Setting up a publisher is easier than setting up a subscriber as don't need to worry about callbacks. 
 
@@ -148,12 +149,15 @@ Now that the perception node has access to the box data coming from the simulato
 Use the msg data from the callback to fill out polygon msg before publishing it.
 
 **useful links**:
-* documentation for (PoseArray)[http://docs.ros.org/api/geometry_msgs/html/msg/PoseArray.html]. 
-* documentation for (Polygon)[http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html]. 
+* documentation for [PoseArray](http://docs.ros.org/api/geometry_msgs/html/msg/PoseArray.html).
+* documentation for [Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html). 
 
 **hint 1**: get box position by using boxmsg.poses[i].position where i is an index
+
 **hint 2**: polygonmsg.points is an `std::vector<geometry_msgs::Point32>`
+
 **hint 3**: ...but boxmsg.poses[i].position is an `geometry_msgs::Point`.
+
 **hint 4**: if you have `geometry_msgs::Point32 p;`, then you add it to polygonmsg.points using
 ```c++
 polygonmsg.points.push_back(p);
@@ -161,15 +165,7 @@ polygonmsg.points.push_back(p);
 
 
 
-
-
-
-
-
-
-
-
-
+### ai.py
 
 
 
