@@ -18,11 +18,13 @@ mkdir -p ~/catkin_ws/src
 
 2. Go into the `src` directory and run `git clone https://github.com/AscendNTNU/ros-workshop`.
 
+3. Inside the ros-workshop directory, run the setup.bash script to install some prerequisites which are not installed by ROS by default.
+
 ## Build the code
 1. Go to catkin_ws directory and run `catkin build`.
 ```
 cd ~/catkin_ws
-catkin build # Note: this requires python-catkin-tools which can be install with sudo apt install python-catkin-tools
+catkin build 
 ```
 
 ## Run the code
@@ -47,7 +49,7 @@ rosrun ros_workshop perception_node
 rosrun ros_workshop ai.py
 ```
 
-6. Now you should have 4 terminals, one running roscore and one for each group. Launching nodes in this way is possible, but cumbersome. Shutdown all the running nodes and in one terminal run 
+6. Now you should have 4 terminals, one running roscore and one for each group. Launching nodes in this way is possible, but cumbersome. Shutdown roscore and all the running nodes and in one terminal run 
 ```
 roslaunch ros_workshop nodes.launch
 ```
@@ -228,19 +230,20 @@ To control the drone, we will publish setpoints to a node called mavros.
 Before we do this from code, we will do it from the terminal in order to get more familiar with the rostopic tool. 
 Type `rostopic pub /mavros/setpoint_raw/local` without pressing enter. Then press TAB a couple of times and let autocomplete fill out a message type and a message for you to edit. Use the arrow keys to scroll to the position attribute and set the position to somewhere above ground. Verify that the drone flies to that spot after you hit enter. 
 
+What happens when you try to fly into a box?
+
 ### Control drone from code
 Set up a subscriber to listen to the topic "/control/position_setpoint" topic you created in the last task. 
 
-Use `rostopic info /mavros/setpoint_raw/local` to find out what message type it expects. Import that message type into the control.cpp. Note that it will be inside mavros_msgs and not geometry_msgs as we've seen before, but the process is the same. Note that for this workshop you only have to fill out the position attribute of the message. The others can be ignored.
+Use `rostopic info /mavros/setpoint_raw/local` to find out what message type it expects. Import that message type into the control.cpp. Note that it will be inside mavros_msgs and not geometry_msgs as we've seen before, but the process is the same. For this workshop you only have to fill out the position attribute of the message, the others can be ignored.
 
-All the boxes are 2 meters tall, and the control drone should ensure that the drone always flies above the boxes. So event if the target on the control/position_setpoint topic is lower than 2 meter, the control node should account for this. 
+All the boxes are 2 meters tall, and the control drone should ensure that the drone always flies above the boxes. So even if the target on the control/position_setpoint topic is lower than 2 meter, the control node should account for this.
 
-Implement the control node as specified. You should now have a system which flies to the box closest to it at the start. 
-
+Implement the control node as specified. You should now have a drone which does simple obstacle avoidance and flies to the box closest to it at the start.
 
 ## Finishing ai.py
 
-Now that you are able to control the drone, modify ai.py so that the drone visits all the boxes. It doesn't have to be optimal, but it shouldn't visit the same box more than once.
-
+Now that you are able to control the drone, modify ai.py so that the drone visits all the boxes. 
+It doesn't have to be optimal, but it shouldn't visit the same box more than once.
 
 
