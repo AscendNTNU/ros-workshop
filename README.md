@@ -44,7 +44,7 @@ rosrun ros_workshop perception_node
 
 4. Use the same process to start control_node in a new terminal. 
 
-5. We will also start the AI systems, but the note that the AI team coded it in python. In a new terminal run
+5. We will also start the AI systems, which were written in python. Run
 ```
 rosrun ros_workshop ai.py
 ```
@@ -54,6 +54,19 @@ rosrun ros_workshop ai.py
 roslaunch ros_workshop nodes.launch
 ```
 This launches roscore and all the nodes specified in the nodes.launch file in a single terminal. Very useful!
+
+
+## Coding tasks
+Now we are going to modify the code so that it does something useful. In the process we will learn about many important topics in ROS, such as subscribers, publishers, messages, and more! 
+
+
+### perception.cpp
+
+#### Setting up subscribers
+
+
+
+
 
 
 

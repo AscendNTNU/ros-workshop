@@ -43,7 +43,7 @@ class GazeboHandler:
         self._tracking_poses = []
 
     def spawn_model(self, name, pose, filepath):
-        rospy.loginfo("spawning model from", filepath)
+        rospy.loginfo("spawning model from %s", filepath)
 
         with open(filepath, "r") as f:
             model_xml = f.read()
