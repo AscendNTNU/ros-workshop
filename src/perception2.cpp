@@ -7,7 +7,6 @@
 geometry_msgs::PoseArray boxmsg;
 void callback(const geometry_msgs::PoseArray& msg) {
   boxmsg = msg;
-  ROS_INFO("Message recieved"); // debug print
 }
 
 

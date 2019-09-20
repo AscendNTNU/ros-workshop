@@ -1,7 +1,7 @@
 # ROS workshop
 Welcome to the Ascend ROS workshop! In this workshop you will get practical experience with the most important functionality of ROS.
 
-In this workshop we will build a system reminiscent of Ascend system with three main node.
+In this workshop we will build a system reminiscent of Ascend's system with three main nodes:
 - Node for Perception group
 - Node for Control group
 - Node for AI group
@@ -9,11 +9,8 @@ In this workshop we will build a system reminiscent of Ascend system with three 
 Behind the scenes there is also a node for handling the simulator, but it should not be necessary to interact with it directly in this workshop.
 
 
-
-# Tasks
-
-## Setup
-### Get the code
+# Setup
+## Get the code
 1. Create a directory called `catkin_ws` on your computer with a subdirectory called `src`.
 ```
 mkdir -p ~/catkin_ws/src
@@ -21,14 +18,14 @@ mkdir -p ~/catkin_ws/src
 
 2. Go into the `src` directory and run `git clone https://github.com/AscendNTNU/ros-workshop`.
 
-### Build the code
+## Build the code
 1. Go to catkin_ws directory and run `catkin build`.
 ```
 cd ~/catkin_ws
 catkin build # Note: this requires python-catkin-tools which can be install with sudo apt install python-catkin-tools
 ```
 
-### Run the code
+## Run the code
 Open up 2 terminal windows and in both go to catkin_ws and run `source devel/setup.bash`. This gives the terminal access to all your ROS packages. 
 
 1. In the first terminal we will start the ROS master node. Do this by typing
@@ -56,7 +53,7 @@ roslaunch ros_workshop nodes.launch
 ```
 This launches roscore and all the nodes specified in the nodes.launch file in a single terminal. Very useful!
 
-### Run the simulator
+## Run the simulator
 To start the simulator use
 ```
 roslaunch ros_workshop simulator.launch
@@ -75,14 +72,14 @@ When running the command above you will get a list of all the topics in the syst
 3. Use the commands given above to find the position of some of the boxes.
 
 
-## Coding tasks
+# Coding tasks
 Now we are going to modify the code so that it does something useful. In the process we will learn about many important topics in ROS, such as subscribers, publishers, messages, and more! 
 
 
-### perception.cpp
+## perception.cpp
 In this task you will be working in perception.cpp inside the src folder. This is the code which is being run by the command `rosrun ros_workshop perception_node`.
 
-#### Setting up a subscriber
+### Setting up a subscriber
 
 The perception node will be responsible for telling the other nodes where the boxes are. It can find out this by subscribing to the topic "/simulator/boxes". Subscribing means that whenever there is a new message on the topic, the perception node will be notified of that. 
 To set up a subscriber we need to know the message type of the topic, which we found out earlier was `geometry_msgs/PoseArray`. Thus at the top of the file we need to include the message definition. 
@@ -112,7 +109,7 @@ Add the code above to perception.cpp and build it using `catkin build`. Run both
 Are the messages being recieved by the perception node?
 Once you are sure the messages are being recieved, you can progress to the next part where the publisher will be set up. You can also remove the debug print since we now know it works. 
 
-#### Setting up a publisher
+### Setting up a publisher
 The perception node should republish the box data that we got above, but we want to ignore the orientation. That means we have to change message type from `geometry_msgs/PoseArray` to an array of points. Unfortunately there is no `geometry_msgs/PointArray`, but there is something called [geometry_msgs/Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html) which is an array of points so it will work similarly. Keep the link in the back of the mind when you fill out the polygon messages later. 
 
 Setting up a publisher is easier than setting up a subscriber as don't need to worry about callbacks. 
@@ -143,7 +140,7 @@ Once this is done, the msg will get published and anyone listening on the topic 
 
 3. Use the `rostopic` tool we learned about earlier to check that the topic "perception/boxes" exists, and that it is being published. Note that it will be an empty message, but we will fix that soon.
 
-#### Finishing the perception node
+### Finishing the perception node
 Now that the perception node has access to the box data coming from the simulator and a publisher for publishing that data to other modules, we have to fill out the polygon message.
 
 Use the msg data from the callback to fill out polygon msg before publishing it.
@@ -164,12 +161,65 @@ polygonmsg.points.push_back(p);
 ```
 
 
+## ai.py
+For high level tasks it is often convenient to work with python instead of C++, and ROS supports this without problems. We will thus write the AI node using python. 
 
-### ai.py
+The end goal of the AI node is to make the drone travel over all the boxes, but as a start we will first set it up so that it travels to the closest box. 
+Then later after the control node is finished it is easy to come back and modify the AI node.
 
 
+### Subscribers in python
+In order to find the box which is closest to the drone, the node needs to about the boxes and also where the drone is. This requires to subscribers, one to the perception topic we set up earlier, and one to a new topic where the drone position is. 
+
+The topics we are interested in are 
+- /perception/boxes, position of boxes
+- /mavros/local_position/pose, pose (position and orientation) of drone
+
+The code below show how to create a subscriber in python. Note that it is almost identical to how it is done in C++. The main difference is that we dont need the NodeHandle in python.
+```python
+from geometry_msgs.msg import Polygon
+
+# Callbacks
+boxes = []
+def boxesCallback(msg):
+    global boxes
+    boxes = msg.points
+
+# Setup code
+sub = rospy.Subscriber("/perception/boxes", Polygon, boxesCallback)
+```
+
+Add this code to ai.py and verify that you are able to recieve messages in python as well. This can for instance be done with a debug print like we did in the perception node. 
+
+Use the `rostopic info /mavros/local_position/pose` to find out the message type of this topic. Once you know the message type, create a subscriber in the AI node for this topic. Again verify with printing that you are able to recieve the drone position inside the AI node. 
 
 
+### Simple AI
+
+Loop over all the boxes to find the box which is closest to drone.
+
+
+### Publisher in python
+
+Now that we know the box which is closest we have to tell control to fly to that box. To do this we will publish to the topic "/control/position_setpoint". 
+Look at the messages available in [geometry_msgs](https://wiki.ros.org/geometry_msgs) and decide which message type this topic should have.
+
+Once you've decided, you can create the publisher in a similar way to how it was done in C++.
+```python
+from geometry_msgs.msg import YOUR_MSG_TYPE
+
+pub = rospy.Publisher("/control/position_setpoint", YOUR_MSG_TYPE, queue_size=1)
+
+# ... later when we want to publish
+
+msg = YOUR_MSG_TYPE() # remember to put data in the message
+pub.publish(msg)
+```
+
+Finish the AI node by adding the closest box data to the message before publishing.
+
+
+## control.cpp
 
 
 

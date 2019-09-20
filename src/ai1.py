@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
 import rospy
-
+from geometry_msgs.msg import Polygon
 
 # Initialize ROS
 rospy.init_node("ai_node")
 
 
-# Set up subscribers here
+# Callbacks
+boxes = []
+def boxesCallback(msg):
+    boxes = msg.points
 
-
+# Setup code
+sub = rospy.Subscriber("/perception/boxes", Polygon, boxesCallback)
 
 
 # Main loop
