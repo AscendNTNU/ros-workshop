@@ -45,15 +45,11 @@ include_directories(
   	${catkin_INCLUDE_DIRS}
 )
 
-add_library(ascend_drone src/AscendDrone.cpp)
-target_link_libraries(ascend_drone ${catkin_LIBRARIES})
-
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(control_node src/control.cpp)
 add_executable(perception_node src/perception.cpp)
-#add_executable(ai_node src/ai_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -64,12 +60,10 @@ add_dependencies(perception_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Specify libraries to link a library or executable target against
 target_link_libraries(control_node
 	${catkin_LIBRARIES}
-	ascend_drone
 )
 ## Specify libraries to link a library or executable target against
 target_link_libraries(perception_node
 	${catkin_LIBRARIES}
-	ascend_drone
 )
 
 

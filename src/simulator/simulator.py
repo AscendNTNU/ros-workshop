@@ -100,7 +100,7 @@ def main():
 
     # generate box positions
     points = []
-    while len(points) < 0:
+    while len(points) < 8:
         p = random_position(-15,15,4,8)
         if math.sqrt((p.x - drone_start_pos.x)**2 + (p.y - drone_start_pos.y)**2) > 4:
             points.append(p)

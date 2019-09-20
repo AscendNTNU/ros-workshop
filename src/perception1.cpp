@@ -1,6 +1,10 @@
 #include <ros/ros.h>
+#include <geometry_msgs/PoseArray.h>
 
 // Define callbacks here
+void callback(const geometry_msgs::PoseArray& msg) {
+  ROS_INFO("Message recieved"); // debug print
+}
 
 
 int main(int argc, char** argv){
@@ -9,8 +13,7 @@ int main(int argc, char** argv){
     ros::NodeHandle n;
 
     // Set up subscribers/publishers here
-    
-
+    ros::Subscriber sub = n.subscribe("/simulator/boxes", 1, callback);
 
     // Main loop
     ROS_INFO("perception is running");
