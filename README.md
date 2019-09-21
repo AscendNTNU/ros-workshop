@@ -36,6 +36,9 @@ cd ~/catkin_ws
 catkin build 
 ```
 
+Building will most likely give a warning which can be ignored, but other than that it should work without problems. 
+If you encounter any issues during building, it is most likely due to missing prerequisites. Please notify us if that happens so we can update this guide!
+
 ## Run the code
 Open up 2 terminal windows and in both go to catkin_ws and run `source devel/setup.bash`. This gives the terminal access to all your ROS packages. 
 
