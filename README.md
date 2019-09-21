@@ -18,8 +18,6 @@ mkdir -p ~/catkin_ws/src
 
 2. Go into the `src` directory and run `git clone https://github.com/AscendNTNU/ros-workshop`.
 
-3. Inside the ros-workshop directory, run the setup.bash script to install some prerequisites which are not installed by ROS by default.
-
 ## Build the code
 
 1. Install prerequisites
