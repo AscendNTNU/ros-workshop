@@ -21,7 +21,16 @@ mkdir -p ~/catkin_ws/src
 3. Inside the ros-workshop directory, run the setup.bash script to install some prerequisites which are not installed by ROS by default.
 
 ## Build the code
-1. Go to catkin_ws directory and run `catkin build`.
+
+1. Install prerequisites
+```bash
+sudo apt install \
+  python-catkin-tools \
+  ros-melodic-mavros-msgs
+```
+
+
+2. Go to catkin_ws directory and run `catkin build`.
 ```
 cd ~/catkin_ws
 catkin build 
@@ -42,7 +51,7 @@ rosrun ros_workshop perception_node
 
 3. What happens if we start the perception node before starting roscore?
 
-4. Restart the perception node and use the same process to start control_node in a new terminal. 
+4. Restart the perception node and use the same process to start control_node in a new terminal. Be aware that the control node will now quickly and this is fine.
 
 5. We will also start the AI systems, which were written in python. Run
 ```
@@ -75,7 +84,7 @@ When running the command above you will get a list of all the topics in the syst
 
 
 # Coding tasks
-Now we are going to modify the code so that it does something useful. In the process we will learn about many important topics in ROS, such as subscribers, publishers, messages, and more! 
+Now we are going to modify the code so that it does something useful. In the process we will learn about many important concepts in ROS, such as subscribers, publishers, messages, and more!
 
 
 ## perception.cpp
@@ -112,7 +121,7 @@ Are the messages being recieved by the perception node?
 Once you are sure the messages are being recieved, you can progress to the next part where the publisher will be set up. You can also remove the debug print since we now know it works. 
 
 ### Setting up a publisher
-The perception node should republish the box data that we got above, but we want to ignore the orientation. That means we have to change message type from `geometry_msgs/PoseArray` to an array of points. Unfortunately there is no `geometry_msgs/PointArray`, but there is something called [geometry_msgs/Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html) which is an array of points so it will work similarly. Keep the link in the back of the mind when you fill out the polygon messages later. 
+The perception node should republish the box data that we got above, but we want to ignore the orientation. That means we have to change message type from `geometry_msgs/PoseArray` to an array of points. Unfortunately there is no `geometry_msgs/PointArray`, but there is something called [geometry_msgs/Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html) which is an array of points so it will work similarly. Keep the hyperlink above in the back of your mind when you fill out the polygon messages later. 
 
 Setting up a publisher is easier than setting up a subscriber as don't need to worry about callbacks. 
 
@@ -149,19 +158,20 @@ Use the msg data from the callback to fill out polygon msg before publishing it.
 
 **useful links**:
 * documentation for [PoseArray](http://docs.ros.org/api/geometry_msgs/html/msg/PoseArray.html).
-* documentation for [Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html). 
+* documentation for [Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html), (think of it as a point array).
 
-**hint 1**: get box position by using boxmsg.poses[i].position where i is an index
+**hint 1**: get box position by using `boxmsg.poses[i].position` where i is an index
 
 **hint 2**: polygonmsg.points is an `std::vector<geometry_msgs::Point32>`
 
-**hint 3**: ...but boxmsg.poses[i].position is an `geometry_msgs::Point`.
+**hint 3**: ...but boxmsg.poses[i].position is an `geometry_msgs::Point`, which is not `geometry_msgs::Point32` but similar.
 
 **hint 4**: if you have `geometry_msgs::Point32 p;`, then you add it to polygonmsg.points using
 ```c++
 polygonmsg.points.push_back(p);
 ```
 
+Once you are done, make sure to check that it works using the `rostopic echo` tool. 
 
 ## ai.py
 For high level tasks it is often convenient to work with python instead of C++, and ROS supports this without problems. We will thus write the AI node using python. 
@@ -174,8 +184,8 @@ Then later after the control node is finished it is easy to come back and modify
 In order to find the box which is closest to the drone, the node needs to about the boxes and also where the drone is. This requires to subscribers, one to the perception topic we set up earlier, and one to a new topic where the drone position is. 
 
 The topics we are interested in are 
-- /perception/boxes, position of boxes
-- /mavros/local_position/pose, pose (position and orientation) of drone
+- "/perception/boxes", position of boxes
+- "/mavros/local_position/pose", pose (position and orientation) of drone
 
 The code below show how to create a subscriber in python. Note that it is almost identical to how it is done in C++. The main difference is that we dont need the NodeHandle in python.
 ```python
@@ -218,7 +228,7 @@ msg = YOUR_MSG_TYPE() # remember to put data in the message
 pub.publish(msg)
 ```
 
-Finish the AI node by adding the closest box data to the message before publishing.
+Finish the simple AI node by adding the closest box data to the message before publishing.
 
 
 ## control.cpp
@@ -233,11 +243,11 @@ Type `rostopic pub /mavros/setpoint_raw/local` without pressing enter. Then pres
 What happens when you try to fly into a box?
 
 ### Control drone from code
-Set up a subscriber to listen to the topic "/control/position_setpoint" topic you created in the last task. 
+Set up a subscriber to listen to the topic "/control/position_setpoint" topic you created in the last task. The given control node does not use any ROS code and thus requires extensive modification. Use perception.cpp as inspiration for how to get ROS functionality into control.cpp.
 
 Use `rostopic info /mavros/setpoint_raw/local` to find out what message type it expects. Import that message type into the control.cpp. Note that it will be inside mavros_msgs and not geometry_msgs as we've seen before, but the process is the same. For this workshop you only have to fill out the position attribute of the message, the others can be ignored.
 
-All the boxes are 2 meters tall, and the control drone should ensure that the drone always flies above the boxes. So even if the target on the control/position_setpoint topic is lower than 2 meter, the control node should account for this.
+All the boxes are 2 meters tall, and the control node should ensure that the drone always flies above the boxes. So even if the target on the control/position_setpoint topic is lower than 2 meters, the control node should account for this.
 
 Implement the control node as specified. You should now have a drone which does simple obstacle avoidance and flies to the box closest to it at the start.
 
