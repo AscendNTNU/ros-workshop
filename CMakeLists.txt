@@ -48,25 +48,9 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(control_node src/control.cpp)
-add_executable(perception_node src/perception.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(perception_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#add_dependencies(ai_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(control_node
-	${catkin_LIBRARIES}
-)
-## Specify libraries to link a library or executable target against
-target_link_libraries(perception_node
-	${catkin_LIBRARIES}
-)
-
-
 
 ## Add gazebo plugins
 include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
