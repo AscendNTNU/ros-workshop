@@ -50,7 +50,7 @@ rosrun ros_workshop perception.py
 
 3. What happens if we start the perception node before starting roscore?
 
-4. Restart the perception node and use the same process to start `control.py` in a new terminal. Be aware that the control node will finish quickly and this is fine. We'll come back to this later.
+4. Restart the perception node and use the same process to start `control.py` in a new terminal. 
 
 5. We will also start the AI systems, which were written in python. Run
 ```
@@ -75,10 +75,12 @@ Leave the simulator running from the previous task. In another terminal type `ro
 When running the command above you will get a list of all the topics in the system. A topic is a place where nodes can recieve and publish messages. 
 
 
-1. Use `rostopic echo ...` to listen to a topic from the command line. For instance `rostopic echo /mavros/local_position/pose` gives the position and orientation of the drone. Where is the drone located now?
+1. Use `rostopic echo ...` to listen to a topic from the command line. For instance `rostopic echo /drone/pose` gives the position and orientation of the drone. Where is the drone located now?
+
+> Tip: Within ROS you can use tab completion. Try to write `rostopic echo /dr` and the press tab a few times. You should get `rostopic echo /drone/pose`. 
 
 
-> Note: The messages coming out of `rostopic echo /mavros/local_position/pose` consists of multiple elements: the *header* and the *pose*. The pose is just the position and the orientation of the drone, whereas the header is something a lot of ROS messages have. The header gives us a way to uniquely identify the message from the `seq` field, a way to know when the message was sent via the `stamp` field and information about which coordinate frame the pose is in via the `frame_id` field. This is not super important now, but you will most likely stumble upon the header numerous times in further work with ROS, so it's nice to know what they are used for.
+> Note: The messages coming out of `rostopic echo /drone/pose` consists of multiple elements: the *header* and the *pose*. The pose is just the position and the orientation of the drone, whereas the header is something a lot of ROS messages have. The header gives us a way to uniquely identify the message from the `seq` field, a way to know when the message was sent via the `stamp` field and information about which coordinate frame the pose is in via the `frame_id` field. This is not super important now, but you will most likely stumble upon the header numerous times in further work with ROS, so it's nice to know what they are used for.
 
 
 2. Use `rostopic info ...` to display information about a topic. Run `rostopic info /simulator/boxes` to get information about topic which contains the boxes. Note that the topic has a type `geometry_msgs/PoseArray`. This means that only messages of that type can be published on this topic. 
@@ -102,7 +104,7 @@ import rospy
 from geometry_msgs.msg import PoseArray 
 ```
 
-> Note: We have to have `.msg` after `import geometry_msgs`
+> Note: We have to have `.msg` after `from geometry_msgs`
 
 Next we need to set up a callback function. This function will be executed whenever there is a new message on the topic. The following function is an empty callback function which you can modify inside the perception node. Note that the callback uses the type information we found earlier, and this ensures that only messages of that type will be recieved. 
 ```python
@@ -161,8 +163,8 @@ Now that the perception node has access to the box data coming from the simulato
 Use the message data from the callback to fill out polygon message before publishing it.
 
 **Useful links**:
-* documentation for [PoseArray](http://docs.ros.org/api/geometry_msgs/html/msg/PoseArray.html).
-* documentation for [Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html), (think of it as a point array).
+* Documentation for [PoseArray](http://docs.ros.org/api/geometry_msgs/html/msg/PoseArray.html).
+* Documentation for [Polygon](http://docs.ros.org/api/geometry_msgs/html/msg/Polygon.html), (think of it as a point array).
 
 **Hint 1**: Get box position/point by using `boxes_message.poses[i].position` where i is an index
 
@@ -182,42 +184,113 @@ Then later after the control node is finished it is easy to come back and modify
 In order to find the box which is closest to the drone, the node needs to about the boxes and also where the drone is. This requires two subscribers, one to the perception topic we set up earlier, and one to a new topic where the drone position is. 
 
 The topics we are interested in are 
-- `perception/boxes`, position of boxes
-- `/mavros/local_position/pose`, pose (position and orientation) of drone
+- `/perception/boxes`- position of boxes
+- `/drone/pose`- pose (position and orientation) of drone
 
 Make subscribers to these topics in the same way you did with the perception node and verify that you are able to receive the messages. Remember to make the necessary imports for the message type of the pose of the drone and the position of the boxes. Use the `rostopic info [topic]` if you are unsure which message types to import.
-
-### Simple AI
-
-Loop over all the boxes to find the box which is closest to drone.
-
 
 ### Services
 
 Now that we know the box which is closest we have to tell control to fly to that box. To do this we will use something called *ROS services*. Services work in a different way than publishers and subscribers. The analogy is that publishers and subscribers work as a radio station transmitting and a radio device listening. The radio station is constantly transmitting (which is publishing in ROS) for example music and a radio is tuning into the radio station channel (which is the topic in ROS) and listens to the music (subscribes).
 
-Services are like you and you friend sending emails to each other. You craft a message and send it, and it will only be received once by your friend, but you and your friend can send as many emails you want. In other words you will not be constantly sending as in the case with publishers. 
+Services are like you and you friend sending emails to each other. You craft a message and send it, and it will only be received once by your friend, but you and your friend can send as many emails you want. In other words you will not be constantly transmitting as in the case with publishers. 
 
 With services you can also check if the message was received successfully or an error occurred. Think of it as if your friend gave you their email address with a typo, and then your email client returns your message with an error that the email address doesn't exist after you've sent it. There might also be a case where your friend expects a kok of an ITGK assignment and you've sent the kok for Matte 1 instead, where your friend will notify back that they've already handed in the kok for Matte 1. 
 
-Services are powerful in this way because they allow us to have more complex communication between nodes. Publishers in ROS doesn't care if no one listens to the topic, but with services we can check this and get feedback. This is useful as we often want to just send a single command to another node, for example "take off" or "fly to this position" to the control node, and be sure that that command is received successfully and not that the control node is currently landing the drone at the moment and that we can't thus take off.
+Services are powerful in this way because they allow us to have more complex communication between nodes. Publishers in ROS doesn't care if no one listens to the topic, but with services we can check this and get feedback. This is useful as we often want to just send a single command to another node, for example "take off" or "fly to this position" to the control node, and be sure that that command is received successfully and not that the control node is currently landing the drone at the moment and that we thus can't take off.
 
-Look at the messages available in [geometry_msgs](https://wiki.ros.org/geometry_msgs) and decide which message type this topic should have.
+We wan't to create three services: take off, fly to x, y, z and land. In other words we want our AI node to just say for example "take off" to the Control node and then the Control node takes care of everything relating to taking off. Creating a service is quite easy, first let's look at how the AI node has to set it up:
 
-Once you've decided, you can create the publisher in a similar way to how it was done in C++.
+</br>
+</br>
+
+We first have to import the message type of the service, exactly in the same way as we did with publishers and subscribers. A trigger is just a simple message which consists of nothing but a response: a success flag and a status messsage. In other words we don't send any data with this message, we just issue a trigger or a "ping", and then the Control node responds with data: a success flag and a status message. Think of it like this: We just want to say to the Control node that we want to take off, *we only want to trigger that take off*, and then the Control node can respond with "yep, sure, taking off" or "no, that's not possible at the moment, we're already flying!".
+
+So open up `ai.py` and go through the following:
+
 ```python
-from geometry_msgs.msg import YOUR_MSG_TYPE
-
-pub = rospy.Publisher("/control/position_setpoint", YOUR_MSG_TYPE, queue_size=1)
-
-# ... later when we want to publish
-
-msg = YOUR_MSG_TYPE() # remember to put data in the message
-pub.publish(msg)
+from std_srvs.srv import Trigger, TriggerResponse
 ```
+
+> Note: We have to have `.srv` after `from std_srvs`
+
+Then we can create a function to send this service message on a specific topic.
+
+```python
+def send_take_off_command():
+	take_off_service_topic = "/control/take_off"
+	# In case the Control node isn't ready yet, we wait until it is ready to receive commands.
+	rospy.wait_for_service(take_off_service_topic) 
+	#  We want to wrap the service call in a try/catch since it can fail and raise a ServiceException
+	try:
+		# Think of this as creating a take off function we can call
+		take_off = rospy.ServiceProxy(take_off_service_topic, Trigger)
+		# We then call this function and get the response from the control node
+		take_off_response = take_off()
+		
+		# Do something with the response, for example check the status flag 
+		if take_off_response.success:
+			rospy.loginfo("Take off successfully sent to Control node! Got response: %s", take_off_response.message)
+		else:
+			rospy.logerr("Oh no! The Control node responded with an error: %s", take_off_response.message)
+
+	except rospy.ServiceException as exception:
+		print("Service class failed: %s" %exception)
+```
+
+
+This is quite some code, so let's break it down. The first lines just declares which *service topic* we're sending on, kind of like an email address.
+We then wait for the service to be "online", that is we wait until the Control node is ready to get commands on this topic.
+
+Then we wrap things into a try except block. This is just to safe guard ourselves in case sending the message fails **within ROS**. It might be the case
+that the Control node dies and we can't send it messages, this will warn us about that. Think about this as in the case where your friend gave you
+their email address with a typo.
+
+Then we declare a *ServiceProxy* which is essentially a function which we can call.
+
+We call that function, the Control node gets that message, responds and we get the response in the AI node in the form of the *take_off_response* variable.
+The try catch block safe guarded us in the case the message sending fails within ROS, but what if the Control node received the message but can't do what
+we ask it to do, for example it can't take off at the moment because we're already in the air flying and taking off then makes no sense? Then it can respond via 
+the success flag. Within the code we check this flag and thus determine if the command was processed successfully. This is a way for us to make sure that things
+are going as expected within our system as a whole. Think of this as you sending the wrong kok to your friend, your friend expected something else or the message you sent
+makes no sense in the current context. This might seem confusing at the moment, but we'll get back to it!
+
+**So essentially, we should just think of services as functions between nodes, between the AI node and the Control node in this case.**
+
+</br>
+</br>
+
+In the control node we have to write some functionality to respond to this message. Open up `control.py` and write the following:
+
+```python
+from std_srvs.srv import Trigger, TriggerResponse, TriggerRequest
+
+def handle_take_off_command(request):
+	response = TriggerResponse()	
+	response.success = True
+	response.message = "All ok!"
+	rospy.loginfo("Handling take off!")
+
+	return response
+
+# Before main loop
+take_off_service = rospy.Service("/control/take_off", Trigger, handle_take_off)
+```
+
+</br>
+</br>
+
+All right, that was a hurdle to get over. Let's inspect what we've made. Restart all the nodes running by quiting them and using the `roslaunch ros_workshop nodes.launch` command. Services can also be inspected in the terminal in the same way as publisher topics. Try to do the following:
+
+1. Type `rosservice list` in the terminal. Do you see the `/control/take_off` service we made?
+2. Get information about this service by using the `rosservice info` command. Verify that the type is in fact `std_srvs/Trigger`.
+3. Try to type `rosservice call /control/take_off` and the press TAB a few times until you get some empty brackets. Press enter, did it respond correctly with a message of "All ok!" that we made? If that's the case, awesome, you just created your first service!
+
+Now we want to verify that it works from the AI node, not just the terminal. Try to call the `send_take_off_command()` right before the main loop in the AI node and relaunch your nodes. Did it print that the take off was successfully sent to the Control node? Superb! Our service is up and running!
 
 Finish the simple AI node by adding the closest box data to the message before publishing.
 
+Loop over all the boxes to find the box which is closest to drone.
 
 ## Control 
 
