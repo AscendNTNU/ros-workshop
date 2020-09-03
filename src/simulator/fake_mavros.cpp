@@ -97,7 +97,7 @@ class FakeMavros {
   public:
     FakeMavros() = delete;
     FakeMavros(const std::string& gz_setpoint_topic, const std::string& gz_yaw_topic, const std::string& gz_pose_topic) 
-      : ros_node("mavros") {
+      : ros_node("drone") {
       gz_node.reset(new gazebo::transport::Node());
       gz_node->Init();
       setpoint_pub = gz_node->Advertise<gazebo::msgs::Vector3d>(gz_setpoint_topic, 1);
@@ -108,8 +108,8 @@ class FakeMavros {
       //yaw_pub->WaitForConnection();
       pose_pub = gz_node->Subscribe(gz_pose_topic, &FakeMavros::gzPoseCb, this);
 
-      target_sub = ros_node.subscribe("setpoint_raw/local", 1, &FakeMavros::positionTargetCb, this);
-      local_position_pub = ros_node.advertise<geometry_msgs::PoseStamped>("local_position/pose", 1);
+      target_sub = ros_node.subscribe("setpoint", 1, &FakeMavros::positionTargetCb, this);
+      local_position_pub = ros_node.advertise<geometry_msgs::PoseStamped>("pose", 1);
       state_pub = ros_node.advertise<mavros_msgs::State>("state", 1);
       arming_srv = ros_node.advertiseService("cmd/arming", &FakeMavros::armingSrv, this);
       mode_srv = ros_node.advertiseService("set_mode", &FakeMavros::setModeSrv, this);
