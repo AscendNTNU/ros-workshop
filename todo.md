@@ -1,2 +1,2 @@
-[ ] Rename mavros/local_position/pose to drone/pose 
-[ ] Add service example code
+[ ] Add spoilers for service explaination
+[ ] Command for restarting simulator
