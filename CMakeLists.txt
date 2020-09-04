@@ -19,6 +19,17 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(gazebo REQUIRED)
 
+add_service_files(
+	FILES
+	FlyCommand.srv
+)
+
+generate_messages(
+	DEPENDENCIES	
+	std_msgs
+	geometry_msgs
+)
+
 
 ###################################
 ## catkin specific configuration ##
