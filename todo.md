@@ -1,2 +1,3 @@
-[ ] Add spoilers for service explaination
-[ ] Command for restarting simulator
+- Add spoilers for service explaination
+- Command for restarting simulator
+- Break down AI and Control part a bit more
