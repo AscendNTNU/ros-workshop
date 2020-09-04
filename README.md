@@ -175,7 +175,7 @@ polygon_message.points.append(point);
 
 Once you are done, make sure to check that it works using the `rostopic echo` tool. 
 
-## AI 
+## AI & Control
 The end goal of the AI node is to make the drone travel over all the boxes. AI and Control are especially tightly coupled, since AI processes and sends commands, such as "take off", and Control responds to these commands and decode them into actual flying introductions for the drone. In this workshop, most of the Control node is written for you, as you should focus more on grasping the ROS concepts than control concepts.
 
 
@@ -306,16 +306,16 @@ Now we want to verify that this works from the AI node, not just the terminal. T
 
 Now you have to do one more thing to finish the core setup of the whole: 
 
-Implement the service call in the AI node allowing us to fly to a given position. For this you can duplicate most of the code for the take off service call, but we need to use another type than `Trigger` to do this, as we want to send a position with our service call. Recall that we in the take off case just said "take off", without passing any arguments to the Control node. With fly to x, y we have to pass the x, y position we want to fly to as well. The nice thing about ROS is that we can easily create these types our selves, and it has been created for you in this case. Try to import it with the following: `from ros_workshop.srv FlyCommand, FlyCommandResponse`. The fly service proxy takes in a two floats: a x and an y. **The code in the control node responding to this command has already been implemented for you, you don't need to change edit the Control node any further for the rest of this workshop**.
+Implement the service call in the AI node allowing us to fly to a given position. For this you can duplicate most of the code for the take off service call, but we need to use another type than `Trigger` to do this, as we want to send a position with our service call. Recall that we in the take off case just said "take off", without passing any arguments to the Control node. With fly to x, y we have to pass the x, y position we want to fly to as well. The nice thing about ROS is that we can easily create these types ourselves, and it has been created for you in this case. Try to import it with the following: `from ros_workshop.srv FlyCommand, FlyCommandResponse` in the AI node. The fly service proxy takes in a two floats: x and y. **The code in the control node responding to this command has already been implemented for you, you don't need to edit the Control node any further for the rest of this workshop**.
 
 Try to send a fly to x, y from the AI node after you've taken off. You can check if the drone has fully taken off by checking if the z component of the  `drone_position` is above for example
 2.5 meters. It's a good idea not to spam the control nodes with these fly commands. Try to limit the commands by introducing some boolean values specifying whether the command has already been sent. 
 
-Restart your nodes and check if the drone flies to the position you specified and only sends one command.
+Restart your nodes and check if the drone flies to the position you specified and only sends one command!
 
 </br>
 
-Now is a good time to take a break and look at what you have made. Try to understand how everything is winded together: we get data about our world from Perception, AI processes those data and sends commands to Control which turns those commands into flight instructions.
+Now is a good time to take a break and look at what you have made. Try to understand how everything is winded together: we get data about our world from Perception, AI processes those data and sends commands to Control which turns those commands into flight instructions. We use publishers and subscribers for data such as drone position and the boxes, because we want continous updates on this data. We use services to issue commands.
 
 
 </br>
