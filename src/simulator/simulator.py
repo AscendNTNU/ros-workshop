@@ -96,7 +96,7 @@ def main():
     boxurdf = rospack.get_path("ros_workshop") + "/src/simulator/box.urdf"
     dronesdf = rospack.get_path("ros_workshop") + "/src/simulator/models/drone/drone.sdf"
 
-    drone_start_pos = random_position(-5,5,0.2, 0.3)
+    drone_start_pos = random_position(0,0,0.2, 0.3)
 
     # generate box positions
     points = []
