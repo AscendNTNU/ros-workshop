@@ -176,8 +176,7 @@ polygon_message.points.append(point);
 Once you are done, make sure to check that it works using the `rostopic echo` tool. 
 
 ## AI 
-The end goal of the AI node is to make the drone travel over all the boxes, but as a start we will first set it up so that it travels to the closest box. 
-Then later after the control node is finished it is easy to come back and modify the AI node.
+The end goal of the AI node is to make the drone travel over all the boxes. AI and Control are especially tightly coupled, since AI processes and sends commands, such as "take off", and Control responds to these commands and decode them into actual flying introductions for the drone. In this workshop, most of the Control node is written for you, as you should focus more on grasping the ROS concepts than control concepts.
 
 
 ### The subscribers
@@ -199,9 +198,8 @@ With services you can also check if the message was received successfully or an 
 
 Services are powerful in this way because they allow us to have more complex communication between nodes. Publishers in ROS doesn't care if no one listens to the topic, but with services we can check this and get feedback. This is useful as we often want to just send a single command to another node, for example "take off" or "fly to this position" to the control node, and be sure that that command is received successfully and not that the control node is currently landing the drone at the moment and that we thus can't take off.
 
-We wan't to create three services: take off, fly to x, y, z and land. In other words we want our AI node to just say for example "take off" to the Control node and then the Control node takes care of everything relating to taking off. Creating a service is quite easy, first let's look at how the AI node has to set it up:
+We wan't to create two services: take off and fly to x, y. In other words we want our AI node to just say for example "take off" to the Control node and then the Control node takes care of everything relating to taking off. Creating a service is quite easy, first let's look at how the AI node has to set it up:
 
-</br>
 </br>
 
 We first have to import the message type of the service, exactly in the same way as we did with publishers and subscribers. A trigger is just a simple message which consists of nothing but a response: a success flag and a status messsage. In other words we don't send any data with this message, we just issue a trigger or a "ping", and then the Control node responds with data: a success flag and a status message. Think of it like this: We just want to say to the Control node that we want to take off, *we only want to trigger that take off*, and then the Control node can respond with "yep, sure, taking off" or "no, that's not possible at the moment, we're already flying!".
@@ -217,7 +215,7 @@ from std_srvs.srv import Trigger, TriggerResponse
 Then we can create a function to send this service message on a specific topic.
 
 ```python
-def send_take_off_command():
+def sendTakeOffCommand():
 	take_off_service_topic = "/control/take_off"
 	# In case the Control node isn't ready yet, we wait until it is ready to receive commands.
 	rospy.wait_for_service(take_off_service_topic) 
@@ -258,63 +256,70 @@ makes no sense in the current context. This might seem confusing at the moment, 
 **So essentially, we should just think of services as functions between nodes, between the AI node and the Control node in this case.**
 
 </br>
-</br>
 
 In the control node we have to write some functionality to respond to this message. Open up `control.py` and write the following:
 
 ```python
 from std_srvs.srv import Trigger, TriggerResponse, TriggerRequest
 
-def handle_take_off_command(request):
-	response = TriggerResponse()	
-	response.success = True
-	response.message = "All ok!"
-	rospy.loginfo("Handling take off!")
+def handleTakeOffRequest(request):
+    response = TriggerResponse()	
+    
+    rospy.loginfo("Handling take off!")
+    # If the drone is at ground
+    if drone.position.z <= 0.1:
+        response.success = True
+        response.message = "All ok!"
 
-	return response
+        # Set the take off position to 2 m in air from the current position
+        setpoint.position.x = drone_position.x
+        setpoint.position.y = drone_position.y
+        setpoint.position.z = 2.0
+    else:
+        response.success = False 
+        response.message = "Seems like the drone is already flying!"
+
+    return response
 
 # Before main loop
 take_off_service = rospy.Service("/control/take_off", Trigger, handle_take_off)
 ```
 
 </br>
-</br>
 
 All right, that was a hurdle to get over. Let's inspect what we've made. Restart all the nodes running by quiting them and using the `roslaunch ros_workshop nodes.launch` command. Services can also be inspected in the terminal in the same way as publisher topics. Try to do the following:
 
-1. Type `rosservice list` in the terminal. Do you see the `/control/take_off` service we made?
+1. Type `rosservice list` in the terminal. Do you see the `/control/take_off` service?
 2. Get information about this service by using the `rosservice info` command. Verify that the type is in fact `std_srvs/Trigger`.
-3. Try to type `rosservice call /control/take_off` and the press TAB a few times until you get some empty brackets. Press enter, did it respond correctly with a message of "All ok!" that we made? If that's the case, awesome, you just created your first service!
+3. Try to type `rosservice call /control/take_off` and the press TAB a few times until you get some empty brackets. Press enter. Did the drone take off? If that's the case, awesome, you've just created your first service!
+4. Try to call `rosservice call /control/take_off "{}"` again while the drone is flying, what happens? Can you deduce why this is the case from the code implemented in the Control node?
 
-Now we want to verify that it works from the AI node, not just the terminal. Try to call the `send_take_off_command()` right before the main loop in the AI node and relaunch your nodes. Did it print that the take off was successfully sent to the Control node? Superb! Our service is up and running!
+<details>
+  <summary>Expand this when you think you have the solution</summary>
+	The service call responded with an error because the drone is already flying, we see that we check that the drone is at ground. If it is not, we return an error. <b>This is the power of services compared to publishers and subscribers, they give us the opportunity to safe guard us against for example commands that make no sense in the current context. This is just a simple example, but flying a drone autonomously requires that we know exactly what we're doing at all times. This helps us with that.</b>
+</details>
 
-Finish the simple AI node by adding the closest box data to the message before publishing.
-
-Loop over all the boxes to find the box which is closest to drone.
-
-## Control 
-
-Now that we have set up logic for deciding where to fly the drone, we need the control node to actually control it.
-
-### Control drone from terminal
-To control the drone, we will publish setpoints to a node called mavros. 
-Before we do this from code, we will do it from the terminal in order to get more familiar with the rostopic tool. 
-Type `rostopic pub /mavros/setpoint_raw/local` without pressing enter. Then press TAB a couple of times and let autocomplete fill out a message type and a message for you to edit. Use the arrow keys to scroll to the position attribute and set the position to somewhere above ground. Verify that the drone flies to that spot after you hit enter. 
-
-What happens when you try to fly into a box?
-
-### Control drone from code
-Set up a subscriber to listen to the topic "/control/position_setpoint" topic you created in the last task. The given control node does not use any ROS code and thus requires extensive modification. Use perception.cpp as inspiration for how to get ROS functionality into control.cpp.
-
-Use `rostopic info /mavros/setpoint_raw/local` to find out what message type it expects. Import that message type into the control.cpp. Note that it will be inside mavros_msgs and not geometry_msgs as we've seen before, but the process is the same. For this workshop you only have to fill out the position attribute of the message, the others can be ignored.
-
-All the boxes are 2 meters tall, and the control node should ensure that the drone always flies above the boxes. So even if the target on the control/position_setpoint topic is lower than 2 meters, the control node should account for this.
-
-Implement the control node as specified. You should now have a drone which does simple obstacle avoidance and flies to the box closest to it at the start.
-
-## Finishing ai.py
-
-Now that you are able to control the drone, modify ai.py so that the drone visits all the boxes. 
-It doesn't have to be optimal, but it shouldn't visit the same box more than once.
+</br>
 
 
+Now we want to verify that this works from the AI node, not just the terminal. Try to call the `sendTakeOffCommand()` right before the main loop in the AI node and relaunch your nodes. Did the drone take off? If it did, you're good to go! 
+
+Now you have to do one more thing to finish the core setup of the whole: 
+
+Implement the service call in the AI node allowing us to fly to a given position. For this you can duplicate most of the code for the take off service call, but we need to use another type than `Trigger` to do this, as we want to send a position with our service call. Recall that we in the take off case just said "take off", without passing any arguments to the Control node. With fly to x, y we have to pass the x, y position we want to fly to as well. The nice thing about ROS is that we can easily create these types our selves, and it has been created for you in this case. Try to import it with the following: `from ros_workshop.srv FlyCommand, FlyCommandResponse`. The fly service proxy takes in a two floats: a x and an y. **The code in the control node responding to this command has already been implemented for you, you don't need to change edit the Control node any further for the rest of this workshop**.
+
+Try to send a fly to x, y from the AI node after you've taken off. You can check if the drone has fully taken off by checking if the z component of the  `drone_position` is above for example
+2.5 meters. It's a good idea not to spam the control nodes with these fly commands. Try to limit the commands by introducing some boolean values specifying whether the command has already been sent. 
+
+Restart your nodes and check if the drone flies to the position you specified and only sends one command.
+
+</br>
+
+Now is a good time to take a break and look at what you have made. Try to understand how everything is winded together: we get data about our world from Perception, AI processes those data and sends commands to Control which turns those commands into flight instructions.
+
+
+</br>
+
+Now for the final task of flying to all of the boxes you should have everything you need. Try to implement some logic in the AI node for flying to all of the boxes and keeping track of which boxes you've been to. Remember not to spam the Control node with commands. Try to implement some logic that we only fire a new fly command at the moment we've arrived at a box and want to fly to the next. Our old friend pythagoras in combination with drone position and the box position is your friend here. 
+
+Bonus: Try to limit the distance the drone has to fly by only flying to the next nearest box (as we always want to limit flight time if possible). 
