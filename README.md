@@ -110,9 +110,9 @@ Next we need to set up a callback function. This function will be executed whene
 ```python
 boxes_message = PoseArray()
 def callback(message):
-	global boxes_message
-	boxes_message = message
-	rospy.loginfo("Message received")
+    global boxes_message
+    boxes_message = message
+    rospy.loginfo("Message received")
 ```
 
 After the callback has been made, we can set up a subscriber, which is done as follows.
@@ -148,7 +148,7 @@ polygon_message = Polygon()
 
 publisher.publish(polygon_message);
 ```
-Once this is done, the msg will get published and anyone listening on the topic "perception/boxes" will be able to recieve the msg.
+Once this is done, the message will get published and anyone listening on the topic "perception/boxes" will be able to recieve the message.
 
 
 1. Extend perception.ai with the publisher code above. The publisher should publish continuosly, so the call to `publisher.publish(polygon_message)` should be inside the main loop.
@@ -216,24 +216,24 @@ Then we can create a function to send this service message on a specific topic.
 
 ```python
 def sendTakeOffCommand():
-	take_off_service_topic = "/control/take_off"
-	# In case the Control node isn't ready yet, we wait until it is ready to receive commands.
-	rospy.wait_for_service(take_off_service_topic) 
-	#  We want to wrap the service call in a try/catch since it can fail and raise a ServiceException
-	try:
-		# Think of this as creating a take off function we can call
-		take_off = rospy.ServiceProxy(take_off_service_topic, Trigger)
-		# We then call this function and get the response from the control node
-		take_off_response = take_off()
+    take_off_service_topic = "/control/take_off"
+    # In case the Control node isn't ready yet, we wait until it is ready to receive commands.
+    rospy.wait_for_service(take_off_service_topic) 
+    #  We want to wrap the service call in a try/catch since it can fail and raise a ServiceException
+    try:
+        # Think of this as creating a take off function we can call
+        take_off = rospy.ServiceProxy(take_off_service_topic, Trigger)
+        # We then call this function and get the response from the control node
+        take_off_response = take_off()
 		
-		# Do something with the response, for example check the status flag 
-		if take_off_response.success:
-			rospy.loginfo("Take off successfully sent to Control node! Got response: %s", take_off_response.message)
-		else:
-			rospy.logerr("Oh no! The Control node responded with an error: %s", take_off_response.message)
+        # Do something with the response, for example check the status flag 
+        if take_off_response.success:
+            rospy.loginfo("Take off successfully sent to Control node! Got response: %s", take_off_response.message)
+        else:
+            rospy.logerr("Oh no! The Control node responded with an error: %s", take_off_response.message)
 
-	except rospy.ServiceException as exception:
-		print("Service class failed: %s" %exception)
+    except rospy.ServiceException as exception:
+        print("Service class failed: %s" %exception)
 ```
 
 
@@ -268,7 +268,7 @@ def handleTakeOffRequest(request):
     rospy.loginfo("Handling take off!")
     # If the drone is at ground
     if drone.position.z <= 0.1:
-        response.success = True
+    	response.success = True
         response.message = "All ok!"
 
         # Set the take off position to 2 m in air from the current position
@@ -278,7 +278,7 @@ def handleTakeOffRequest(request):
     else:
         response.success = False 
         response.message = "Seems like the drone is already flying!"
-
+	
     return response
 
 # Before main loop
