@@ -1,2 +1,2 @@
-[ ] Add spoilers for service explaination
-[ ] Command for restarting simulator
+- Clean up simulator code
+
