@@ -10,23 +10,25 @@ Behind the scenes there is also a node for handling the simulator, but it should
 
 
 # Setup
-## Get the code
+## Get the code and dependencies
 1. Create a directory called `catkin_ws` on your computer with a subdirectory called `src`.
 ```bash
 mkdir -p ~/catkin_ws/src
 ```
 
-2. Go into the `src` directory and run `git clone https://github.com/AscendNTNU/ros-workshop`.
+2. Go into the `src` directory and run:
+```bash
+git clone https://github.com/AscendNTNU/ros-workshop
+```
 
-## Build the code
-
-1. Install prerequisites. Run the `setup.sh` script. This might take some time as it installs ROS and tools for building our packages (you might be asked to input your password).
+3. Install prerequisites. Run the `setup.sh` script. This might take some time as it installs ROS and tools for building our packages (you might be asked to input your password).
 ```bash
 ./setup.sh
 ```
 
+## Build the code
 
-2. Go to catkin_ws directory and run `catkin build`.
+1. Go to catkin_ws directory and run `catkin build`.
 ```bash
 cd ~/catkin_ws
 catkin build 
