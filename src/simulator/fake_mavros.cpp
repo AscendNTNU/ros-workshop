@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <std_srvs/Empty.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
@@ -17,7 +18,7 @@ class FakeMavros {
     ros::NodeHandle ros_node;
     ros::Subscriber target_sub;
     ros::Publisher local_position_pub, state_pub;
-    ros::ServiceServer arming_srv, mode_srv;
+    ros::ServiceServer arming_srv, mode_srv, reset_srv;
     ros::Timer event_timer;
 
     gazebo::transport::NodePtr gz_node;
@@ -28,13 +29,15 @@ class FakeMavros {
     double x=0.0,y=0.0,z=0.0,yaw=0.0;
 
     geometry_msgs::PoseStamped pose;
+	decltype(pose) initial_pose;
+    bool initial_pose_set = false;
     mavros_msgs::State state;
     
     void positionTargetCb(const mavros_msgs::PositionTarget& msg) {
       x = msg.position.x;
       y = msg.position.y;
       z = msg.position.z;
-      yaw = static_cast<double>(msg.yaw);
+      yaw = static_cast<double>(std::atan2(y - pose.pose.position.y, x - pose.pose.position.x));
 
       data_recieved = true;
       ROS_INFO_ONCE("Received position/yaw target");
@@ -54,6 +57,7 @@ class FakeMavros {
         yaw_msg.set_x(0.0);
         yaw_msg.set_y(0.0);
         yaw_msg.set_z(yaw);
+
 
         setpoint_pub->Publish(setpoint_msg);
         yaw_pub->Publish(yaw_msg);
@@ -80,6 +84,29 @@ class FakeMavros {
       return true;
     }
 
+	bool resetSrv(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
+      ROS_INFO_NAMED("mavros", "set to reset");
+      ros::NodeHandle node_handle;
+      ros::ServiceClient gazebo_reset_service_client = node_handle.serviceClient<std_srvs::Empty>("/gazebo/reset_world");
+      std_srvs::Empty gazebo_reset_call;
+
+      if (!gazebo_reset_service_client.call(gazebo_reset_call)) {
+        ROS_FATAL("Could not reset the world, try restarting it.");
+        return false;
+      }
+
+      pose = initial_pose;
+	  x = initial_pose.pose.position.x;
+	  y = initial_pose.pose.position.y;
+	  z = 0.0;
+      state.armed = false;
+      state.guided = false;
+      state.mode = "";
+      initial_pose_set = false;
+
+      return true;
+    }
+
     void gzPoseCb(ConstPosePtr& msg) {
       ROS_INFO_ONCE("received pose from gazebo");
       pose.header.stamp = ros::Time::now();
@@ -92,12 +119,17 @@ class FakeMavros {
       pose.pose.orientation.y = msg->orientation().y();
       pose.pose.orientation.z = msg->orientation().z();
       pose.pose.orientation.w = msg->orientation().w();
+
+	  if (!initial_pose_set) {
+        initial_pose = pose;
+        initial_pose_set = true;
+      }
     }
 
   public:
     FakeMavros() = delete;
     FakeMavros(const std::string& gz_setpoint_topic, const std::string& gz_yaw_topic, const std::string& gz_pose_topic) 
-      : ros_node("mavros") {
+      : ros_node("drone") {
       gz_node.reset(new gazebo::transport::Node());
       gz_node->Init();
       setpoint_pub = gz_node->Advertise<gazebo::msgs::Vector3d>(gz_setpoint_topic, 1);
@@ -108,11 +140,13 @@ class FakeMavros {
       //yaw_pub->WaitForConnection();
       pose_pub = gz_node->Subscribe(gz_pose_topic, &FakeMavros::gzPoseCb, this);
 
-      target_sub = ros_node.subscribe("setpoint_raw/local", 1, &FakeMavros::positionTargetCb, this);
-      local_position_pub = ros_node.advertise<geometry_msgs::PoseStamped>("local_position/pose", 1);
+      target_sub = ros_node.subscribe("setpoint", 1, &FakeMavros::positionTargetCb, this);
+      local_position_pub = ros_node.advertise<geometry_msgs::PoseStamped>("pose", 1);
       state_pub = ros_node.advertise<mavros_msgs::State>("state", 1);
       arming_srv = ros_node.advertiseService("cmd/arming", &FakeMavros::armingSrv, this);
       mode_srv = ros_node.advertiseService("set_mode", &FakeMavros::setModeSrv, this);
+	  reset_srv = ros_node.advertiseService("/simulator/reset", &FakeMavros::resetSrv, this);
+
 
       state.armed = false;
       state.guided = false;

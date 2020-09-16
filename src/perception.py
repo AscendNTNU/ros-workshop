@@ -2,24 +2,16 @@
 
 import rospy
 
-# Set up callbacks for subscribers here
+# Set up callback here
 
-
-
-# Set up service calls here
-
-
-
-# Initialize ros
-rospy.init_node("ai_node")
+# Initialize ROS 
+rospy.init_node("perception_node")
 
 
 # Set up subscribers here
 
-
-
 # Main loop
-rospy.loginfo("AI is running")
+rospy.loginfo("Perception is running")
 rate = rospy.Rate(30)
 while not rospy.is_shutdown():
 
