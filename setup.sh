@@ -6,6 +6,7 @@ sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31
 sudo apt update
 sudo apt install ros-noetic-desktop-full -y
 echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+echo "source $HOME/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source /opt/ros/noetic/setup.bash
 
 # Install Catkin and extra dependencies
