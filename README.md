@@ -21,8 +21,9 @@ mkdir -p ~/catkin_ws/src
 git clone https://github.com/AscendNTNU/ros-workshop
 ```
 
-3. Install prerequisites. Run the `setup.sh` script. This might take some time as it installs ROS and tools for building our packages (you might be asked to input your password).
+3. Install prerequisites. Run the `setup.sh` script in the ros-workshop repo. This might take some time as it installs ROS and tools for building our packages (you might be asked to input your password).
 ```bash
+cd ros-workshop
 ./setup.sh
 ```
 
