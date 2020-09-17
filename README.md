@@ -150,7 +150,7 @@ from geometry_msgs.msg import PoseArray, Polygon
 
 # ....further down ...
 
-# Inside the main function
+# Before the main loop
 publisher = rospy.Publisher("perception/boxes", Polygon, queue_size=1)
 ```
 
@@ -301,7 +301,7 @@ def handleTakeOffRequest(request):
     rospy.loginfo("Handling take off!")
     # If the drone is at ground
     if drone.position.z <= 0.1:
-    	response.success = True
+        response.success = True
         response.message = "All ok!"
 
         # Set the take off position to 2 m in air from the current position
@@ -320,7 +320,7 @@ Then we have to actually set up the service and say which topic, type and functi
 
 ```python
 # Before main loop
-take_off_service = rospy.Service("/control/take_off", Trigger, handle_take_off)
+take_off_service = rospy.Service("/control/take_off", Trigger, handleTakeOffRequest)
 ```
 
 </br>
