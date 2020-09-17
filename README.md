@@ -300,7 +300,7 @@ def handleTakeOffRequest(request):
     
     rospy.loginfo("Handling take off!")
     # If the drone is at ground
-    if drone.position.z <= 0.1:
+    if drone_position.z <= 0.1:
         response.success = True
         response.message = "All ok!"
 
