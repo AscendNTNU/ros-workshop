@@ -27,10 +27,10 @@ def handleFlyRequest(request):
     rospy.loginfo("Handling fly request to %s, %s!", request.x, request.y)
     if drone_position.z <= 0.1:
         response.success = False
-        response.messsage = "Seems like the drone hasn't taken off yet"
+        response.message = "Seems like the drone hasn't taken off yet"
     elif setpoint.position.x == request.x and setpoint.position.y == request.y:
         response.success = False
-        response.messsage = "We are already flying to this setpoint!"
+        response.message = "We are already flying to this setpoint!"
     else:
         response.success = True
         response.message = "All ok!"
