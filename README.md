@@ -255,7 +255,7 @@ def sendTakeOffCommand():
             rospy.logerr("Oh no! The Control node responded with an error: %s", take_off_response.message)
 
     except rospy.ServiceException as exception:
-        print("Service class failed: %s" %exception)
+        rospy.logerr("Service class failed: %s", exception)
 ```
 
 
