@@ -304,7 +304,7 @@ def handleTakeOffRequest(request):
         response.success = True
         response.message = "All ok!"
 
-        # Set the take off position to 2 m in air from the current position
+        # Set the take off position to 3 m in air from the current position
         setpoint.position.x = drone_position.x
         setpoint.position.y = drone_position.y
         setpoint.position.z = 3.0
